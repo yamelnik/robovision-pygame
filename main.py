@@ -36,8 +36,8 @@ while mainloop:
                 leftSpeed = speed
                 rightSpeed = speed
             elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
-                leftSpeed = speed
-                rightSpeed = speed
+                leftSpeed = -speed
+                rightSpeed = -speed
             elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
                 leftSpeed = 0
                 rightSpeed = speed
@@ -45,16 +45,8 @@ while mainloop:
                 leftSpeed = speed
                 rightSpeed = 0
         elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_UP or event.key == pygame.K_w:
-                leftSpeed = 0
-                rightSpeed = 0
-            elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
-                leftSpeed = 0
-                rightSpeed = 0
-            elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
-                leftSpeed = 0
-                rightSpeed = 0
-            elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+            if event.key in [pygame.K_UP, event.key == pygame.K_w, pygame.K_DOWN, pygame.K_s, pygame.K_LEFT, pygame.K_a,
+                             pygame.K_RIGHT, pygame.K_d]:
                 leftSpeed = 0
                 rightSpeed = 0
     pygame.display.set_caption("Frame rate: {:0.2f} frames per second."
