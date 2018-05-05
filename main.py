@@ -20,6 +20,8 @@ playtime = 0.0
 speed = 50
 leftSpeed = 0
 rightSpeed = 0
+prevLeftSpeed = 0
+prevRightSpeed = 0
 
 while mainloop:
     milliseconds = clock.tick(FPS)  # do not go faster than this frame rate
@@ -52,5 +54,8 @@ while mainloop:
     pygame.display.set_caption("Frame rate: {:0.2f} frames per second."
                                " Playtime: {:.2} seconds".format(
         clock.get_fps(), playtime))
-    movementClient.send_movement(leftSpeed, rightSpeed)
+    if leftSpeed != prevLeftSpeed or rightSpeed != prevRightSpeed:
+        movementClient.send_movement(leftSpeed, rightSpeed)
+        prevLeftSpeed = leftSpeed
+        prevRightSpeed = rightSpeed
     pygame.display.flip()  # flip the screen like in a flipbook
