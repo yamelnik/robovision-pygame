@@ -5,13 +5,21 @@ import movementClient
 
 pygame.init()
 
-screen = pygame.display.set_mode((640, 480))
-background = pygame.Surface(screen.get_size())
+screenWidth, screenHeight = (640, 480)
+screen = pygame.display.set_mode((screenWidth, screenHeight))
+
+background = pygame.Surface((screenWidth, screenHeight))
 background.fill((255, 255, 255))  # fill the background white
-background = background.convert()  # prepare for faster blitting
+background = background.convert()
+
+robotSurface = pygame.Surface((20, 20))
+robotSurface.fill((255, 255, 255))
+pygame.draw.circle(robotSurface, (0, 255, 0), (10, 10), 10)
+robotSurface = robotSurface.convert()
 
 # ------- blit the surfaces on the screen to make them visible
 screen.blit(background, (0, 0))  # blit the background on the screen (overwriting all)
+screen.blit(robotSurface, (screenWidth / 2 - 20, screenHeight / 2 - 20))
 clock = pygame.time.Clock()
 mainloop = True
 FPS = 30  # desired framerate in frames per second. try out other values !
