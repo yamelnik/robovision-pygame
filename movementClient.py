@@ -17,8 +17,7 @@ def disconnect():
 
 
 def send_movement(leftEngine, rightEngine):
-    if leftEngine or rightEngine:
-        client = get_robot_connection()
-        data = [{"l": leftEngine}, {"r": rightEngine}]
-        json_data = json.dumps(data).encode()
-        client.send(json_data)
+    client = get_robot_connection()
+    data = [{"l": leftEngine}, {"r": rightEngine}]
+    json_data = json.dumps(data).encode()
+    client.send(json_data)

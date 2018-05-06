@@ -34,6 +34,8 @@ playtime = 0.0
 speed = 50
 leftSpeed = 0
 rightSpeed = 0
+prevLeftSpeed = 0
+prevRightSpeed = 0
 
 while mainloop:
     milliseconds = clock.tick(FPS)  # do not go faster than this frame rate
@@ -50,8 +52,8 @@ while mainloop:
                 leftSpeed = speed
                 rightSpeed = speed
             elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
-                leftSpeed = speed
-                rightSpeed = speed
+                leftSpeed = -speed
+                rightSpeed = -speed
             elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
                 leftSpeed = 0
                 rightSpeed = speed
@@ -59,20 +61,15 @@ while mainloop:
                 leftSpeed = speed
                 rightSpeed = 0
         elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_UP or event.key == pygame.K_w:
-                leftSpeed = 0
-                rightSpeed = 0
-            elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
-                leftSpeed = 0
-                rightSpeed = 0
-            elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
-                leftSpeed = 0
-                rightSpeed = 0
-            elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+            if event.key in [pygame.K_UP, event.key == pygame.K_w, pygame.K_DOWN, pygame.K_s, pygame.K_LEFT, pygame.K_a,
+                             pygame.K_RIGHT, pygame.K_d]:
                 leftSpeed = 0
                 rightSpeed = 0
     pygame.display.set_caption("Frame rate: {:0.2f} frames per second."
                                " Playtime: {:.2} seconds".format(
         clock.get_fps(), playtime))
-    movementClient.send_movement(leftSpeed, rightSpeed)
+    if leftSpeed != prevLeftSpeed or rightSpeed != prevRightSpeed:
+        movementClient.send_movement(leftSpeed, rightSpeed)
+        prevLeftSpeed = leftSpeed
+        prevRightSpeed = rightSpeed
     pygame.display.flip()  # flip the screen like in a flipbook
