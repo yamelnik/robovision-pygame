@@ -1,11 +1,20 @@
 #!/usr/bin/env python
 from __future__ import print_function, division
+import sys, math
 import pygame
+from pygame.locals import *
+from PointsQueue import PointsQueue
 import movementClient
-import obstacleCreator
 import pointsClient
 
-SCREEN_WIDTH, SCREEN_HEIGHT = (640, 480)
+green=(0,255,0)
+
+line_angle = 0
+angle_indx = 0
+dist_indx = 1
+factor_distance = 1
+
+SCREEN_WIDTH, SCREEN_HEIGHT = (700, 700)
 ROBOT_MARKER_RADIUS = 10
 RGB_GREEN = (0, 255, 0)
 RGB_WHITE = (255, 255, 255)
@@ -14,21 +23,112 @@ pygame.init()
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
+
+##convert functions
+def to_window(x, y):  # coordinate to window
+    x, y = int(x), int(y)
+    n_x = x + SCREEN_WIDTH // 2
+    n_y = SCREEN_HEIGHT // 2 - y
+    return ([n_x, n_y])
+
+
+def to_radian(angle):
+    x = (angle * 3.14) / 180
+    return (x)
+
+
+##
+
+##draw function
+def convert_to_catarsian(angle, distance):
+    distance *= 10 * factor_distance
+    angle = to_radian(angle)
+    x, y = math.cos(angle) * distance, math.sin(angle) * distance
+    pos = to_window(x, y)
+    return pos
+
+
+def draw_point(list_point, screen=screen):
+    for point in list_point:
+        pygame.draw.circle(screen, green, point, 2)
+
+
+def draw_circles(screen=screen):
+    raduis = 50
+    for x in range(1, SCREEN_WIDTH // 2):
+        n_raduis = ((x // raduis) + 1) * raduis
+        pygame.draw.circle(screen, green, (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2), n_raduis, 2)
+
+
+def draw_line(angle, screen=screen):
+    a = math.tan(to_radian(angle))
+    y = SCREEN_HEIGHT // 2
+    if a == 0:
+        y = 0
+        if angle == 0:
+            x = SCREEN_WIDTH / 2
+        elif angle == 180:
+            x = -SCREEN_WIDTH / 2
+    else:
+        x = y // a
+        if angle > 180:
+            x = -x
+
+    if angle > 180:
+        y = -y
+
+    pos = to_window(x, y)
+    pygame.draw.line(screen, green, (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2), pos, 2)
+
+
+def draw_text(screen, text, t_size):
+    fontObj = pygame.font.Font('freesansbold.ttf', t_size)
+    textSurface = fontObj.render(text, True, (255, 255, 255))
+    screen.blit(textSurface, (0, 0))
+
+def dist_point_to_gui(point):
+    l = list(point)
+    l[dist_indx] = int(l[dist_indx])
+    l[angle_indx] = int(l[angle_indx])
+    return tuple(l)
+
+
+def remove_dup_points(points):
+    points_sorted = {}
+    for i in points[::-1]:
+        if i[angle_indx] in points_sorted:
+            print("removed %d" % i[angle_indx])
+            continue
+        points_sorted.update({i[angle_indx]: i[dist_indx]})
+
+    new_points = points_sorted.items()
+    gui_points = []
+    for i in new_points:
+        gui_points.append(dist_point_to_gui(i))
+
+    return gui_points
+
+
+def update_screen(points):
+    global line_angle
+    screen.fill((0, 0, 0))
+    draw_circles(screen)
+    if len(points) < 1:
+        return
+    relv_points = remove_dup_points(points)
+    screen_points = []
+    for i in relv_points:
+        screen_points.append(convert_to_catarsian(i[angle_indx], i[dist_indx]))
+
+    print(screen_points)
+    draw_point(screen_points)
+    line_angle = (line_angle + 5) % 360
+    draw_line(line_angle)
+
+
 background = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 background.fill(RGB_WHITE)
 background = background.convert()
-
-robot_surface_width = robot_surface_height = ROBOT_MARKER_RADIUS * 2
-robot_surface = pygame.Surface((robot_surface_width, robot_surface_height))
-robot_surface.fill(RGB_WHITE)
-robot_surface_center_point = (int(robot_surface_width / 2), int(robot_surface_height / 2))
-pygame.draw.circle(robot_surface, RGB_GREEN, robot_surface_center_point, ROBOT_MARKER_RADIUS)
-robot_surface = robot_surface.convert()
-
-obstacles_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-obstacles_surface.fill(RGB_WHITE)
-obstacleCreator.draw_obstacles(obstacles_surface)
-obstacles_surface.convert()
 
 # ------- blit the surfaces on the screen to make them visible
 screen.blit(background, (0, 0))  # blit the background on the screen (overwriting all)
@@ -43,6 +143,11 @@ leftSpeed = 0
 rightSpeed = 0
 prevLeftSpeed = 0
 prevRightSpeed = 0
+
+points_queue = PointsQueue(1000)
+def draw_point(list_point,screen=screen):
+    for point in list_point:
+        pygame.draw.circle(screen,green,point,2)
 
 while mainloop:
     milliseconds = clock.tick(FPS)  # do not go faster than this frame rate
@@ -79,11 +184,12 @@ while mainloop:
         movementClient.send_movement(leftSpeed, rightSpeed)
         prevLeftSpeed = leftSpeed
         prevRightSpeed = rightSpeed
+    else:
+        movementClient.send_blank()
 
-    obstacles = pointsClient.get_points()
-    obstacleCreator.draw_obstacles(obstacles_surface, obstacles)
-
-    screen.blit(obstacles_surface, (0, 0))
-    screen.blit(robot_surface, (SCREEN_WIDTH / 2 - robot_surface_width, SCREEN_HEIGHT / 2 - robot_surface_height))
+    points = pointsClient.get_points()
+    points_queue.put(points)
+    update_screen(points_queue.get())
+    #render points
 
     pygame.display.flip()  # flip the screen like in a flipbook

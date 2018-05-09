@@ -15,3 +15,10 @@ def send_movement(leftEngine, rightEngine):
     data = [{"l": leftEngine}, {"r": rightEngine}]
     json_data = json.dumps(data).encode()
     client.send(json_data)
+
+
+def send_blank():
+    client = get_robot_connection()
+    data = []
+    json_data = json.dumps(data).encode()
+    client.send(json_data)
