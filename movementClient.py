@@ -1,11 +1,5 @@
-import socket, json
-
-CLIENT = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-TCP_HOST = "127.0.0.1"
-TCP_PORT = 8070
-BUFFER_SIZE = 1024
-
-CLIENT.connect((TCP_HOST, TCP_PORT))
+import json
+from robotClient import CLIENT
 
 
 def get_robot_connection():

@@ -3,6 +3,7 @@ from __future__ import print_function, division
 import pygame
 import movementClient
 import obstacleCreator
+import pointsClient
 
 SCREEN_WIDTH, SCREEN_HEIGHT = (640, 480)
 ROBOT_MARKER_RADIUS = 10
@@ -31,8 +32,6 @@ obstacles_surface.convert()
 
 # ------- blit the surfaces on the screen to make them visible
 screen.blit(background, (0, 0))  # blit the background on the screen (overwriting all)
-screen.blit(obstacles_surface, (0, 0))
-screen.blit(robot_surface, (SCREEN_WIDTH / 2 - robot_surface_width, SCREEN_HEIGHT / 2 - robot_surface_height))
 
 clock = pygame.time.Clock()
 mainloop = True
@@ -80,4 +79,11 @@ while mainloop:
         movementClient.send_movement(leftSpeed, rightSpeed)
         prevLeftSpeed = leftSpeed
         prevRightSpeed = rightSpeed
+
+    obstacles = pointsClient.get_points()
+    obstacleCreator.draw_obstacles(obstacles_surface, obstacles)
+
+    screen.blit(obstacles_surface, (0, 0))
+    screen.blit(robot_surface, (SCREEN_WIDTH / 2 - robot_surface_width, SCREEN_HEIGHT / 2 - robot_surface_height))
+
     pygame.display.flip()  # flip the screen like in a flipbook
